@@ -1072,7 +1072,6 @@ const persona = {
 }
 ```
 
-
 Las propiedades y métodos de un objeto pueden ser de cualquier tipo de JavaScript, incluso otros objetos o arrays.
 
 ```
@@ -1210,7 +1209,6 @@ for (const property in spiderman) {
 // -> powers: web,invisibility,spider-sense
 ```
 
-
 ### Transformar un objeto en un array
 
 A veces queremos transformar un objeto en un array para poder iterar sobre él. Para esto podemos utilizar el método Object.keys(), Object.values() o Object.entries().
@@ -1309,3 +1307,190 @@ console.log(gamesystem.specs?.cpu)
 ```
 
 Si la propiedad specifications no existe, el operador ?. devuelve undefined y no se produce ningún error. Si la propiedad existe, el operador ?. devuelve el valor de la propiedad.
+
+```
+const user = {
+  name: 'Peter',
+  settings: {
+    theme: 'dark',
+    notifications: {
+      email: true,
+      push: false,
+      marketing: undefined
+    }
+  }
+}
+
+// la forma clásica de acceder a una propiedad anidada
+// de forma segura
+let email = undefined
+if (user && user.settings &&
+  user.settings.notifications &&
+  user.settings.notifications.email) {
+  email = user.settings.notifications.email
+}
+
+console.log(email) // -> true
+
+// con Optional Chaining Operator
+const email = user?.settings?.notifications?.email
+console.log(email) // -> true
+```
+
+### El operador in para comprobar si una propiedad existe
+
+Otra forma de comprobar si una propiedad existe es usando el operador in. Este operador comprueba si una propiedad existe en un objeto y devuelve true o false:
+
+```
+const gamesystem = {
+  name: 'PS5',
+  price: 550,
+  specifications: undefined,
+}
+
+console.log('name' in gamesystem) // -> true
+console.log('specifications' in gamesystem) // -> false
+console.log('specs' in gamesystem)
+
+
+if (
+  'specifications' in gamesystem &&
+  gamesystem.specifications !== undefined &&
+  gamesystem.specifications !== null) {
+  console.log(gamesystem.specifications.ram)
+} else {
+  console.log('No hay especificaciones')
+}
+```
+
+## Asincronismo
+
+En JavaScript, el asincronismo significa que las operaciones pueden ejecutarse sin bloquear el hilo principal. Esto permite que la interfaz de usuario siga respondiendo mientras se realizan otras tareas en segundo plano
+
+Ejemplo:
+
+Imaginemos que queremos cargar una imagen desde un servidor. La descarga puede tardar unos segundos, pero no queremos que la interfaz de usuario se bloquee mientras tanto.
+
+```
+// Función para cargar una imagen
+function cargarImagen(url) {
+  // Simulamos una descarga de 2 segundos
+  setTimeout(() => {
+    // La imagen se ha cargado
+    // ...
+  }, 2000);
+}
+
+// Llamamos a la función
+cargarImagen("https://ejemplo.com/imagen.jpg");
+
+// La interfaz de usuario sigue respondiendo mientras se carga la imagen
+
+```
+
+## Promesas
+
+Las promesas son un objeto que representa el resultado eventual de una operación asincrónica. Se pueden usar para manejar el flujo de control y evitar el "callback hell".
+
+Ejemplo:
+
+Usando promesas, podemos reescribir el código anterior de una forma más elegante:
+
+```
+// Función para cargar una imagen
+function cargarImagen(url) {
+  return new Promise((resolve, reject) => {
+    // Simulamos una descarga de 2 segundos
+    setTimeout(() => {
+      if (false) {
+        resolve(url);
+      } else {
+        reject(new Error("Error al cargar la imagen"));
+      }
+    }, 2000);
+  });
+}
+
+// Llamamos a la función y manejamos la promesa
+cargarImagen("https://ejemplo.com/imagen.jpg")
+  .then((imagen) => {
+    console.log("todo melo = ", imagen);
+  })
+  .catch((error) => {
+    console.log("Me muero por x o y razo = ", error);
+  });
+
+```
+
+## fetch()
+
+Una vez que aprendemos a realizar peticiones HTTP mediante XHR nos damos cuenta que es un mecanismo muy interesante y útil, y que nos abre un mundo de posibilidades trabajando con Javascript. Sin embargo, con el tiempo nos vamos dando cuenta también, que la forma de trabajar con objetos XMLHttpRequest, aunque es muy potente requiere mucho trabajo que hace que el código no sea tan legible y práctico como quizás debería.
+
+Entonces es cuando surge fetch, un sistema más moderno, basado en promesas de Javascript, para realizar peticiones HTTP asíncronas de una forma más legible y cómoda.
+
+### Peticiones con el método fetch()
+
+Fetch es el nombre de una nueva API para Javascript con la cuál podemos realizar peticiones HTTP asíncronas utilizando promesas y de forma que el código sea un poco más sencillo y menos verbose. La forma de realizar una petición es muy sencilla, básicamente se trata de llamar a fetch y pasarle por parámetro la URL de la petición a realizar:
+
+```
+const promise = fetch("/robots.txt");
+
+promise.then(function(response) {
+  /* ... */
+});
+```
+
+El fetch() devolverá una Promise que será aceptada cuando reciba una respuesta y sólo será rechazada si hay un fallo de red o si por alguna razón no se pudo completar la petición.
+
+El modo más habitual de manejar las promesas es utilizando .then(), aunque también se puede utilizar async/await. Esto se suele reescribir de la siguiente forma, que queda mucho más simple y evitamos constantes o variables temporales de un solo uso:
+
+fetch("/robots.txt")
+.then(function(response) {
+/** Código que procesa la respuesta **/
+});
+
+Al método .then() se le pasa una función callback donde su parámetro response es el objeto de respuesta de la petición que hemos realizado. En su interior realizaremos la lógica que queramos hacer con la respuesta a nuestra petición
+
+### Headers
+
+Fetch permite enviar cabeceras HTTP con las peticiones. Las cabeceras son información adicional que se envía al servidor junto con la petición.
+
+```
+const options = {
+  method: "GET",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  // body: JSON.stringify(update), POST
+};
+
+fetch("https://api.github.com/users/manishmshiva", options)
+  // Exito
+  .then((response) => response.json()) // convertir a json
+  .then((json) => console.log(json)) //imprimir los datos en la consola
+  .catch((err) => console.log("Solicitud fallida", err)); // Capturar errores
+```
+
+
+## Async/Await
+
+Async/Await es una sintaxis introducida en ECMAScript 2017 que permite escribir código asincrónico de una forma más síncrona y fácil de leer. Se basa en dos palabras clave:
+
+* async: Indica que una función es asíncrona y puede devolver una promesa.
+* await: Permite esperar a que una promesa se resuelva antes de continuar con la ejecución del código.
+
+```
+async function obtenerDatos() {
+  const respuesta = await fetch("https://api.ejemplo.com/datos");
+  const datos = await respuesta.json();
+  return datos;
+}
+
+async function main() {
+  const datos = await obtenerDatos();
+  console.log(datos);
+}
+
+main();
+```
+
